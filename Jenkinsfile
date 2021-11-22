@@ -1,10 +1,25 @@
 pipeline {
-    agent { docker { image 'python:3.5.1' } }
-    stages {
-        stage('build') {
-            steps {
-                sh 'python --version'
-            }
+  agent none
+  options { 
+    buildDiscarder(logRotator(numToKeepStr: '2'))
+    skipDefaultCheckout true
+  }
+  stages {
+    stage('Test-linux') {
+      agent {
+        kubernetes {
+          label 'nodejs-pod'
+          yamlFile 'linux/nodejs-pod.yaml'
         }
-    }
+      }
+      steps {
+        checkout scm
+        container('nodejs') {
+          echo 'Hello World!'   
+          sh 'node --version'
+        }
+      }
+    }    
+  }
 }
+
